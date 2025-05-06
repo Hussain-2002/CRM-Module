@@ -52,6 +52,9 @@ const AddLeadForm = ({ onSubmit, leadToEdit, closeForm }) => {
     }
   };
 
+  const statusOptions = ['New', 'Contacted', 'Converted', 'Qualified', 'Unqualified'];
+  const ratingOptions = ['Hot', 'Warm', 'Cold'];
+
   return (
     <div className="p-4 bg-white border rounded shadow mb-8">
       <h2 className="text-xl font-semibold mb-6">
@@ -85,7 +88,7 @@ const AddLeadForm = ({ onSubmit, leadToEdit, closeForm }) => {
         <div>
           <h3 className="text-blue-600 font-medium mb-2">Lead Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {['fax', 'leadSource', 'status', 'industry', 'numberOfEmployees', 'annualRevenue', 'rating', 'teamId'].map((field) => (
+            {['fax', 'leadSource', 'industry', 'numberOfEmployees', 'annualRevenue', 'teamId'].map((field) => (
               <div key={field}>
                 <label className="block text-sm font-medium mb-1">
                   {field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
@@ -99,6 +102,42 @@ const AddLeadForm = ({ onSubmit, leadToEdit, closeForm }) => {
                 />
               </div>
             ))}
+
+            {/* Status dropdown */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="">Select Status</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status.toLowerCase()}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Rating dropdown */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Rating</label>
+              <select
+                name="rating"
+                value={formData.rating}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="">Select Rating</option>
+                {ratingOptions.map((rating) => (
+                  <option key={rating} value={rating.toLowerCase()}>
+                    {rating}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

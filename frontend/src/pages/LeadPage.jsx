@@ -150,6 +150,8 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
           <option value="converted">Converted</option>
+          <option value="qualified">Qualified</option>
+          <option value="unqualified">Unqualified</option>
         </select>
 
         <button
