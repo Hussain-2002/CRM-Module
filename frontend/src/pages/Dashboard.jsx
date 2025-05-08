@@ -1,26 +1,16 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Header from '../Components/Header';
 import AddLeadForm from '../Components/AddLeadForm';
 import LeadsPage from './LeadPage';
+import MainLayout from '../Components/MainLayout';
 
 const BASE_URL = 'http://localhost:5000/api/leads';
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('dashboard');
   const [leads, setLeads] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [leadToEdit, setLeadToEdit] = useState(null);
-
-  const toggleSidebar = () => setSidebarOpen(prev => !prev);
-
-  const handleNavigation = (page) => {
-    setActivePage(page);
-    setIsFormOpen(false);
-    setLeadToEdit(null);
-    setSidebarOpen(false);
-  };
 
   const fetchLeads = async () => {
     try {
@@ -81,50 +71,28 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex">
-      {sidebarOpen && (
-        <aside className="w-64 bg-gray-800 text-white min-h-screen p-4">
-          <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
-          <nav className="flex flex-col space-y-4">
-            <button className="hover:bg-gray-700 p-2 rounded" onClick={() => handleNavigation('dashboard')}>
-              Dashboard
-            </button>
-            <button className="hover:bg-gray-700 p-2 rounded" onClick={() => handleNavigation('leads')}>
-              Leads
-            </button>
-          </nav>
-        </aside>
+    <MainLayout activePage={activePage} onNavigate={setActivePage}>
+      {activePage === 'dashboard' && (
+        <h1 className="text-3xl font-bold">Welcome to Goanny Technology Dashboard</h1>
       )}
 
-      <div className="flex-1">
-        <Header onMenuClick={toggleSidebar} />
-        <main className="p-6 overflow-auto">
-          {activePage === 'dashboard' && (
-            <h1 className="text-3xl font-bold">Welcome to Goanny Technology Dashboard</h1>
-          )}
+      {activePage === 'leads' && !isFormOpen && (
+        <LeadsPage
+          leads={leads}
+          setLeads={setLeads}
+          onDeleteLead={handleDeleteLead}
+          onOpenForm={handleOpenForm}
+        />
+      )}
 
-        {activePage === 'leads' && !isFormOpen && (
-        <>
-            {/* ✅ Allow LeadsPage to update leads after CSV import */}
-            <LeadsPage
-            leads={leads}
-            setLeads={setLeads}
-            onDeleteLead={handleDeleteLead}
-            onOpenForm={handleOpenForm}
-            />
-        </>
-)}
-
-          {activePage === 'leads' && isFormOpen && (
-            <AddLeadForm
-              onSubmit={leadToEdit ? handleUpdateLead : handleAddLead}
-              leadToEdit={leadToEdit}
-              closeForm={handleCloseForm}
-            />
-          )}
-        </main>
-      </div>
-    </div>
+      {activePage === 'leads' && isFormOpen && (
+        <AddLeadForm
+          onSubmit={leadToEdit ? handleUpdateLead : handleAddLead}
+          leadToEdit={leadToEdit}
+          closeForm={handleCloseForm}
+        />
+      )}
+    </MainLayout>
   );
 };
 
