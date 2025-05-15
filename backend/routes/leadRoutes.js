@@ -5,21 +5,25 @@ import {
   getLeadById,
   updateLead,
   deleteLead,
-  importLeads // ✅ import the new bulk import controller
+  importLeads,
+  getLeadStats,
+  getLeadTrends
 } from '../controllers/leadController.js';
 
 const router = express.Router();
 
-// Route: /api/leads
-router.get('/', getLeads);          // Get all leads or filtered
-router.post('/', createLead);       // Create a new lead
+// Core lead routes
+router.get('/', getLeads);
+router.post('/', createLead);
+router.post('/import', importLeads);
 
-// 🔄 Bulk import route
-router.post('/import', importLeads); // ✅ Add bulk import route
+// Analytics
+router.get('/stats', getLeadStats);
+router.get('/bar-stats', getLeadTrends); // ✅ Match Dashboard.jsx route
 
-// Route: /api/leads/:id
-router.get('/:id', getLeadById);    // Get lead by ID
-router.put('/:id', updateLead);     // Update lead by ID
-router.delete('/:id', deleteLead);  // Delete lead by ID
+// CRUD by ID
+router.get('/:id', getLeadById);
+router.put('/:id', updateLead);
+router.delete('/:id', deleteLead);
 
 export default router;

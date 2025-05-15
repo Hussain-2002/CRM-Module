@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import leadRoutes from './routes/leadRoutes.js';
 
+
+
+
 dotenv.config();
 connectDB();
 
@@ -15,6 +18,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/leads', leadRoutes);
+
+
 
 // Catch-all for unknown routes
 app.use((req, res, next) => {
