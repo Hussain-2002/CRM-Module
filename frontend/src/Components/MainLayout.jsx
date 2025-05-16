@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import Header from './Header';
-import Settings from '../pages/Settings'; // ✅ Import Settings
 
-const MainLayout = ({ children, activePage, onNavigate }) => {
+const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleNavigate = (page) => {
     onNavigate(page);
-    setSidebarOpen(false); // ✅ Automatically close sidebar on navigation
+    setSidebarOpen(false); // close sidebar on navigation
   };
 
   return (
@@ -44,9 +43,9 @@ const MainLayout = ({ children, activePage, onNavigate }) => {
       )}
 
       <div className="flex-1">
-        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} onLogout={onLogout} />
         <main className="p-6 overflow-auto">
-          {activePage === 'settings' ? <Settings /> : children}
+          {children}
         </main>
       </div>
     </div>

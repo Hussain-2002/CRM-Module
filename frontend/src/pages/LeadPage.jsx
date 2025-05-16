@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import LeadsTable from '../Components/LeadsTable';
 
 const LeadDetails = ({ lead, onClose }) => {
-  const fullName = `${lead?.firstName || ''} ${lead?.lastName || ''}`;
+  const fullName = `${lead?.firstName || ''} ${lead?.lastName || ''}`.trim();
   const company = lead?.companyName || lead?.company || 'N/A';
-  const employees = lead?.numberOfEmployees || lead?.numOfEmployees || 'N/A';
-  const address = lead?.address || `${lead?.street || ''}, ${lead?.city || ''}, ${lead?.state || ''}, ${lead?.zipCode || ''}, ${lead?.country || ''}`;
+  const employees = lead?.numberOfEmployees ?? lead?.numOfEmployees ?? 'N/A';
+  const address =
+    lead?.address ||
+    [lead?.street, lead?.city, lead?.state, lead?.zipCode, lead?.country]
+      .filter(Boolean)
+      .join(', ') ||
+    'N/A';
 
   return (
     <div className="p-4 border rounded-lg bg-white shadow-md fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-xl w-full">
       <h3 className="text-xl font-semibold mb-4">Lead Details</h3>
       <ul className="space-y-2">
-        <li><strong>Name:</strong> {fullName}</li>
+        <li><strong>Name:</strong> {fullName || 'N/A'}</li>
         <li><strong>Email:</strong> {lead?.email || 'N/A'}</li>
         <li><strong>Phone:</strong> {lead?.phone || 'N/A'}</li>
         <li><strong>Company:</strong> {company}</li>
@@ -32,31 +37,36 @@ const LeadDetails = ({ lead, onClose }) => {
 };
 
 const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
-  const [localLeads, setLocalLeads] = useState(leads);
   const [statusFilter, setStatusFilter] = useState('');
   const [viewLeadDetails, setViewLeadDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    setLocalLeads(leads);
-  }, [leads]);
-
+  // Pagination constants
   const leadsPerPage = 10;
-  const filteredLeads = localLeads.filter(lead =>
+  const filteredLeads = leads.filter((lead) =>
     statusFilter ? lead.status === statusFilter : true
   );
+  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
   const indexOfLastLead = currentPage * leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfLastLead - leadsPerPage, indexOfLastLead);
-  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
+  // CSV Export
   const handleExportCSV = () => {
     const headers = [
-      'First Name', 'Last Name', 'Email', 'Phone', 'Company',
-      'Status', 'Lead Source', 'Industry', 'Annual Revenue',
-      'Number of Employees', 'Address'
+      'First Name',
+      'Last Name',
+      'Email',
+      'Phone',
+      'Company',
+      'Status',
+      'Lead Source',
+      'Industry',
+      'Annual Revenue',
+      'Number of Employees',
+      'Address',
     ];
 
-    const rows = filteredLeads.map(lead => [
+    const rows = filteredLeads.map((lead) => [
       lead.firstName || '',
       lead.lastName || '',
       lead.email || '',
@@ -66,12 +76,12 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
       lead.leadSource || '',
       lead.industry || '',
       lead.annualRevenue || '',
-      lead.numberOfEmployees || lead.numOfEmployees || '',
-      `${lead.street || ''}, ${lead.city || ''}, ${lead.state || ''}, ${lead.zipCode || ''}, ${lead.country || ''}`
+      lead.numberOfEmployees ?? lead.numOfEmployees ?? '',
+      [lead.street, lead.city, lead.state, lead.zipCode, lead.country].filter(Boolean).join(', '),
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
       .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -84,23 +94,32 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
     document.body.removeChild(link);
   };
 
+  // CSV Import - updated with header:true and validation
   const handleImportCSV = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: async function (results) {
+      complete: async (results) => {
+        if (results.errors.length > 0) {
+          alert(`CSV parsing error: ${results.errors.map(err => err.message).join(', ')}`);
+          return;
+        }
+
         const rows = results.data;
         const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'companyName'];
 
-        const invalid = rows.filter(row =>
-          requiredFields.some(field => !row[field]?.trim())
+        // Validate required fields in each row
+        const invalidRows = rows.filter((row) =>
+          requiredFields.some((field) => !row[field]?.trim())
         );
 
-        if (invalid.length > 0) {
-          alert(`Import failed. ${invalid.length} row(s) are missing required fields:\n${requiredFields.join(', ')}`);
+        if (invalidRows.length > 0) {
+          alert(
+            `Import failed. ${invalidRows.length} row(s) missing required fields:\n${requiredFields.join(', ')}`
+          );
           return;
         }
 
@@ -108,31 +127,45 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
           const response = await axios.post('http://localhost:5000/api/leads/import', rows);
           const newlyAddedLeads = Array.isArray(response.data) ? response.data : [response.data];
 
-          setLocalLeads(prev => [...prev, ...newlyAddedLeads]); // ✅ Local update
-          setLeads(prev => [...prev, ...newlyAddedLeads]);      // ✅ Parent state update
+          setLeads((prev) => [...prev, ...newlyAddedLeads]);
 
           alert('CSV imported successfully!');
-        } catch (err) {
-          console.error('Bulk CSV Import Error:', err);
+        } catch (error) {
+          console.error('Bulk CSV Import Error:', error);
           alert('Error importing leads in bulk.');
         }
-      }
+      },
     });
   };
 
+  // Download CSV Template
   const handleDownloadTemplate = () => {
     const headers = [
-      'firstName', 'lastName', 'email', 'phone', 'companyName',
-      'status', 'leadSource', 'industry', 'annualRevenue',
-      'numberOfEmployees', 'street', 'city', 'state', 'zipCode', 'country'
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'companyName',
+      'status',
+      'leadSource',
+      'industry',
+      'annualRevenue',
+      'numberOfEmployees',
+      'street',
+      'city',
+      'state',
+      'zipCode',
+      'country',
     ];
-    const csv = [headers].map(row => row.join(',')).join('\n');
+    const csv = headers.join(',') + '\n';
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = 'lead-template.csv';
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
@@ -143,7 +176,10 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
       <div className="flex items-center flex-wrap gap-4 mb-4">
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+          }}
           className="border rounded px-4 py-2 w-full sm:w-48"
         >
           <option value="">All Status</option>
@@ -173,7 +209,7 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
             htmlFor="csvInput"
             className="cursor-pointer px-4 py-2 bg-indigo-600 text-white rounded inline-block"
           >
-            IMPORT FILE
+            Import File
           </label>
           <input
             id="csvInput"
@@ -199,12 +235,17 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
         onViewDetails={setViewLeadDetails}
       />
 
+      {/* Pagination */}
       <div className="flex justify-center mt-4 space-x-2">
         {Array.from({ length: totalPages }, (_, i) => (
           <button
             key={i + 1}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600'}`}
+            className={`px-3 py-1 border rounded ${
+              currentPage === i + 1
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-blue-600 border-blue-600'
+            }`}
           >
             {i + 1}
           </button>
@@ -212,10 +253,7 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
       </div>
 
       {viewLeadDetails && (
-        <LeadDetails
-          lead={viewLeadDetails}
-          onClose={() => setViewLeadDetails(null)}
-        />
+        <LeadDetails lead={viewLeadDetails} onClose={() => setViewLeadDetails(null)} />
       )}
     </div>
   );
