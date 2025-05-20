@@ -14,8 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/leads', leadRoutes);
-app.use('/api/auth', authRoutes);
- // use imported router directly
+app.use('/api/auth', authRoutes);  // use imported router directly
 
 app.use((req, res) => {
   res.status(404).json({ message: 'API route not found' });

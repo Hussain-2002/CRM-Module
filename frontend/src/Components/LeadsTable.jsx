@@ -6,20 +6,30 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const leadsPerPage = 5;
 
-  // Sort state: column and direction
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState(null);
 
-  // Keep sortedLeads in sync with leads prop and apply sorting/filtering
+  // Apply sorting whenever leads, sortColumn, or sortDirection change
   useEffect(() => {
-    setSortedLeads(leads);
-    setCurrentPage(1); // reset page on leads change
-  }, [leads]);
+    let updatedLeads = [...leads];
 
-  // Toggle sorting by column and direction
+    if (sortColumn) {
+      updatedLeads.sort((a, b) => {
+        const aVal = a[sortColumn]?.toString().toLowerCase() || '';
+        const bVal = b[sortColumn]?.toString().toLowerCase() || '';
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    setSortedLeads(updatedLeads);
+    setCurrentPage(1);
+  }, [leads, sortColumn, sortDirection]);
+
   const handleSort = (column) => {
     let direction = 'asc';
     if (sortColumn === column && sortDirection === 'asc') {
@@ -27,26 +37,13 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
     }
     setSortColumn(column);
     setSortDirection(direction);
-
-    const sorted = [...leads].sort((a, b) => {
-      // Make sure to handle undefined/null values gracefully
-      const aVal = a[column] ? a[column].toString().toLowerCase() : '';
-      const bVal = b[column] ? b[column].toString().toLowerCase() : '';
-      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-    setSortedLeads(sorted);
-    setCurrentPage(1);
   };
 
-  // Handle search input change
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
-  // Filter leads based on search query
   const filteredLeads = sortedLeads.filter((lead) => {
     const query = searchQuery.toLowerCase();
     const fullName = `${lead.firstName || ''} ${lead.lastName || ''}`.toLowerCase();
@@ -58,13 +55,11 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
     );
   });
 
-  // Pagination logic
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
   const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
-  // Delete confirmation handler
   const handleDelete = () => {
     if (leadToDelete) {
       onDelete(leadToDelete._id);
@@ -73,7 +68,6 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
     }
   };
 
-  // Status color helper
   const getStatusColor = (status = '') => {
     switch (status.toLowerCase()) {
       case 'new':
@@ -87,7 +81,6 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
     }
   };
 
-  // Render sort arrow for UI feedback
   const renderSortArrow = (column) => {
     if (sortColumn !== column) return null;
     return sortDirection === 'asc' ? ' ▲' : ' ▼';

@@ -10,6 +10,8 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'user', // default role
+    adminSecretCode: '', // for admin verification
     termsAccepted: false,
   });
 
@@ -35,6 +37,11 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
       return;
     }
 
+    if (formData.role === 'admin' && !formData.adminSecretCode) {
+      setErrorMsg("Admin secret code is required for admin role.");
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await axios.post('http://localhost:5000/api/auth/register', {
@@ -44,10 +51,13 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
         phoneNumber: formData.phoneNumber,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        role: formData.role,
+        adminSecretCode: formData.role === 'admin' ? formData.adminSecretCode : undefined,
       });
 
       console.log('Registered:', response.data);
-      onRegisterSuccess(); // You can redirect or show login
+      onRegisterSuccess(); // e.g. redirect to login
     } catch (error) {
       setErrorMsg(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {
@@ -127,6 +137,37 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
               className="w-full rounded border px-3 py-2"
             />
           </div>
+
+          {/* Role selection */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Role *</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full rounded border px-3 py-2"
+              required
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          {/* Admin secret code (only if role is admin) */}
+          {formData.role === 'admin' && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Admin Secret Code *</label>
+              <input
+                name="adminSecretCode"
+                type="password"
+                value={formData.adminSecretCode}
+                onChange={handleChange}
+                placeholder="Enter admin secret code"
+                className="w-full rounded border px-3 py-2"
+                required={formData.role === 'admin'}
+              />
+            </div>
+          )}
 
           {/* Password and Confirm */}
           <div className="flex gap-4">

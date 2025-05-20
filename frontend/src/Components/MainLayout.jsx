@@ -17,13 +17,17 @@ const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
             <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
             <nav className="flex flex-col space-y-4">
               <button
-                className={`hover:bg-gray-700 p-2 rounded text-left ${activePage === 'dashboard' ? 'bg-gray-700' : ''}`}
+                className={`hover:bg-gray-700 p-2 rounded text-left ${
+                  activePage === 'dashboard' ? 'bg-gray-700' : ''
+                }`}
                 onClick={() => handleNavigate('dashboard')}
               >
                 Dashboard
               </button>
               <button
-                className={`hover:bg-gray-700 p-2 rounded text-left ${activePage === 'leads' ? 'bg-gray-700' : ''}`}
+                className={`hover:bg-gray-700 p-2 rounded text-left ${
+                  activePage === 'leads' ? 'bg-gray-700' : ''
+                }`}
                 onClick={() => handleNavigate('leads')}
               >
                 Leads
@@ -33,7 +37,9 @@ const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
 
           <div className="pt-4 border-t border-gray-700">
             <button
-              className={`hover:bg-gray-700 p-2 rounded text-left w-full ${activePage === 'settings' ? 'bg-gray-700' : ''}`}
+              className={`hover:bg-gray-700 p-2 rounded text-left w-full ${
+                activePage === 'settings' ? 'bg-gray-700' : ''
+              }`}
               onClick={() => handleNavigate('settings')}
             >
               ⚙️ Settings
@@ -43,10 +49,13 @@ const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
       )}
 
       <div className="flex-1">
-        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} onLogout={onLogout} />
-        <main className="p-6 overflow-auto">
-          {children}
-        </main>
+        {/* ✅ Pass onProfileClick to Header */}
+        <Header
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          onProfileClick={() => handleNavigate('profile')}
+          onLogout={onLogout}
+        />
+        <main className="p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );

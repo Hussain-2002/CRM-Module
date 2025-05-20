@@ -41,7 +41,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
   const [viewLeadDetails, setViewLeadDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Pagination constants
   const leadsPerPage = 10;
   const filteredLeads = leads.filter((lead) =>
     statusFilter ? lead.status === statusFilter : true
@@ -50,7 +49,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
   const indexOfLastLead = currentPage * leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfLastLead - leadsPerPage, indexOfLastLead);
 
-  // CSV Export
   const handleExportCSV = () => {
     const headers = [
       'First Name',
@@ -94,7 +92,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
     document.body.removeChild(link);
   };
 
-  // CSV Import - updated with header:true and validation
   const handleImportCSV = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -111,7 +108,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
         const rows = results.data;
         const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'companyName'];
 
-        // Validate required fields in each row
         const invalidRows = rows.filter((row) =>
           requiredFields.some((field) => !row[field]?.trim())
         );
@@ -138,7 +134,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
     });
   };
 
-  // Download CSV Template
   const handleDownloadTemplate = () => {
     const headers = [
       'firstName',
@@ -235,7 +230,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
         onViewDetails={setViewLeadDetails}
       />
 
-      {/* Pagination */}
       <div className="flex justify-center mt-4 space-x-2">
         {Array.from({ length: totalPages }, (_, i) => (
           <button

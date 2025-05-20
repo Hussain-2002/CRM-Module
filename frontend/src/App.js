@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadPage';
 import AddLeadForm from './Components/AddLeadForm';
 import Settings from './pages/Settings';
+import ProfilePage from './pages/Profile'; // <-- new import
 import MainLayout from './Components/MainLayout';
 import LoginPage from './pages/LoginPage';       
 import RegisterPage from './pages/RegisterPage';
@@ -92,6 +93,11 @@ function App() {
     setActivePage('dashboard');
   };
 
+  // New handler to navigate to Profile page
+  const handleProfileClick = () => {
+    setActivePage('profile');
+  };
+
   if (!isLoggedIn) {
     return showRegister ? (
       <RegisterPage
@@ -111,6 +117,7 @@ function App() {
       activePage={activePage}
       onNavigate={setActivePage}
       onLogout={handleLogout}
+      onProfileClick={handleProfileClick} // <-- new prop here
     >
       {activePage === 'dashboard' && (
         <Dashboard activePage={activePage} setActivePage={setActivePage} />
@@ -134,6 +141,8 @@ function App() {
       )}
 
       {activePage === 'settings' && <Settings />}
+
+      {activePage === 'profile' && <ProfilePage />} {/* new ProfilePage render */}
     </MainLayout>
   );
 }
