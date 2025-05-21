@@ -1,13 +1,13 @@
 import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 
-const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
+const MainLayout = ({ children, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation(); // to get current URL
+  const navigate = useNavigate();
 
-  const handleNavigate = (page) => {
-    onNavigate(page);
-    setSidebarOpen(false); // close sidebar on navigation
-  };
+  const currentPath = location.pathname;
 
   return (
     <div className="flex bg-white text-black dark:bg-gray-900 dark:text-white min-h-screen">
@@ -16,46 +16,54 @@ const MainLayout = ({ children, activePage, onNavigate, onLogout }) => {
           <div>
             <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
             <nav className="flex flex-col space-y-4">
-              <button
+              <Link
+                to="/dashboard"
                 className={`hover:bg-gray-700 p-2 rounded text-left ${
-                  activePage === 'dashboard' ? 'bg-gray-700' : ''
+                  currentPath === '/dashboard' ? 'bg-gray-700' : ''
                 }`}
-                onClick={() => handleNavigate('dashboard')}
+                onClick={() => setSidebarOpen(false)}
               >
                 Dashboard
-              </button>
-              <button
+              </Link>
+
+              <Link
+                to="/leads"
                 className={`hover:bg-gray-700 p-2 rounded text-left ${
-                  activePage === 'leads' ? 'bg-gray-700' : ''
+                  currentPath === '/leads' ? 'bg-gray-700' : ''
                 }`}
-                onClick={() => handleNavigate('leads')}
+                onClick={() => setSidebarOpen(false)}
               >
                 Leads
-              </button>
+              </Link>
             </nav>
           </div>
 
           <div className="pt-4 border-t border-gray-700">
-            <button
-              className={`hover:bg-gray-700 p-2 rounded text-left w-full ${
-                activePage === 'settings' ? 'bg-gray-700' : ''
+            <Link
+              to="/settings"
+              className={`hover:bg-gray-700 p-2 rounded text-left block w-full ${
+                currentPath === '/settings' ? 'bg-gray-700' : ''
               }`}
-              onClick={() => handleNavigate('settings')}
+              onClick={() => setSidebarOpen(false)}
             >
               ⚙️ Settings
-            </button>
+            </Link>
           </div>
         </aside>
       )}
 
       <div className="flex-1">
-        {/* ✅ Pass onProfileClick to Header */}
         <Header
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-          onProfileClick={() => handleNavigate('profile')}
+          onProfileClick={() => {
+            setSidebarOpen(false);
+            navigate('/profile'); // use react-router navigation
+          }}
           onLogout={onLogout}
         />
-        <main className="p-6 overflow-auto">{children}</main>
+        <main className="p-6 overflow-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

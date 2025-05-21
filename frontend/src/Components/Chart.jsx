@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,7 +12,7 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-const Chart = ({ stats, barData, viewMode, setViewMode, handleExportChart, barChartRef }) => {
+const Chart = forwardRef(({ stats, barData, viewMode, setViewMode, handleExportChart }, ref) => {
   const pieChartData = {
     labels: Object.keys(stats),
     datasets: [
@@ -70,7 +71,7 @@ const Chart = ({ stats, barData, viewMode, setViewMode, handleExportChart, barCh
         </div>
         <div className="h-[300px] w-full">
           <Bar
-            ref={barChartRef}
+            ref={ref}  // <-- ref is now passed properly
             data={barChartData}
             options={{ responsive: true, maintainAspectRatio: false }}
           />
@@ -78,6 +79,6 @@ const Chart = ({ stats, barData, viewMode, setViewMode, handleExportChart, barCh
       </div>
     </div>
   );
-};
+});
 
 export default Chart;

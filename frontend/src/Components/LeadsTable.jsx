@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
+
+// Capitalize full name (e.g., "john doe" -> "John Doe")
+const capitalizeWords = (str) =>
+  str.replace(/\b\w/g, (char) => char.toUpperCase());
+
+// Capitalize first letter of email (e.g., "john@example.com" -> "John@example.com")
+const capitalizeFirstLetter = (str) =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,7 +21,6 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState(null);
 
-  // Apply sorting whenever leads, sortColumn, or sortDirection change
   useEffect(() => {
     let updatedLeads = [...leads];
 
@@ -68,19 +76,6 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
     }
   };
 
-  const getStatusColor = (status = '') => {
-    switch (status.toLowerCase()) {
-      case 'new':
-        return 'bg-blue-500';
-      case 'contacted':
-        return 'bg-yellow-500';
-      case 'converted':
-        return 'bg-green-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
   const renderSortArrow = (column) => {
     if (sortColumn !== column) return null;
     return sortDirection === 'asc' ? ' ▲' : ' ▼';
@@ -127,41 +122,48 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
             </tr>
           </thead>
           <tbody>
-            {currentLeads.map((lead) => (
-              <tr key={lead._id}>
-                <td className="px-4 py-2 border">{`${lead.firstName || ''} ${lead.lastName || ''}`}</td>
-                <td className="px-4 py-2 border">{lead.email || 'N/A'}</td>
-                <td className="px-4 py-2 border">{lead.phone || 'N/A'}</td>
-                <td className="px-4 py-2 border">
-                  <span className={`text-white px-2 py-1 rounded ${getStatusColor(lead.status)}`}>
-                    {lead.status || 'N/A'}
-                  </span>
-                </td>
-                <td className="px-4 py-2 border text-center">
-                  <button
-                    onClick={() => onViewDetails(lead)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded mr-2"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => onEdit(lead)}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLeadToDelete(lead);
-                      setShowDeleteConfirm(true);
-                    }}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {currentLeads.map((lead) => {
+              const fullName = capitalizeWords(`${lead.firstName || ''} ${lead.lastName || ''}`.trim());
+              const email = lead.email ? capitalizeFirstLetter(lead.email) : 'N/A';
+              return (
+                <tr key={lead._id}>
+                  <td className="px-4 py-2 border">{fullName}</td>
+                  <td className="px-4 py-2 border">{email}</td>
+                  <td className="px-4 py-2 border">{lead.phone || 'N/A'}</td>
+                  <td className="px-4 py-2 border">
+                    <span className="text-gray-700 px-2 py-1 rounded capitalize">
+                      {lead.status || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 border text-center space-x-3">
+                    <button
+                      onClick={() => onViewDetails(lead)}
+                      aria-label="View lead details"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => onEdit(lead)}
+                      aria-label="Edit lead"
+                      className="hover:text-yellow-600 cursor-pointer"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLeadToDelete(lead);
+                        setShowDeleteConfirm(true);
+                      }}
+                      aria-label="Delete lead"
+                      className="hover:text-red-600 cursor-pointer"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -170,7 +172,9 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
       <div className="flex justify-between items-center p-4">
         <button
           onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-          className={`px-4 py-2 rounded text-gray-700 ${currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-400'}`}
+          className={`px-4 py-2 rounded text-gray-700 ${
+            currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-400'
+          }`}
           disabled={currentPage === 1}
         >
           Prev
@@ -180,7 +184,9 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
         </span>
         <button
           onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-          className={`px-4 py-2 rounded text-gray-700 ${currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-400'}`}
+          className={`px-4 py-2 rounded text-gray-700 ${
+            currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-400'
+          }`}
           disabled={currentPage === totalPages}
         >
           Next

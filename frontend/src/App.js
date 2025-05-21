@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from 'react-router-dom';
 import axios from 'axios';
+
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadPage';
+import LeadDetailsPage from './pages/LeadDetailsPage'; // <-- New import
 import AddLeadForm from './Components/AddLeadForm';
 import Settings from './pages/Settings';
-import ProfilePage from './pages/Profile'; // <-- new import
+import ProfilePage from './pages/Profile';
 import MainLayout from './Components/MainLayout';
-import LoginPage from './pages/LoginPage';       
+import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
-function App() {
-  const [activePage, setActivePage] = useState('dashboard');
+function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-
   const [leads, setLeads] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [leadToEdit, setLeadToEdit] = useState(null);
 
-  // Fetch leads on mount or when needed
+  const navigate = useNavigate();
+
   useEffect(() => {
-    if (isLoggedIn && activePage === 'leads') {
+    if (isLoggedIn) {
       fetchLeads();
     }
-  }, [isLoggedIn, activePage]);
+  }, [isLoggedIn]);
 
   const fetchLeads = async () => {
     try {
@@ -72,30 +80,15 @@ function App() {
     }
   };
 
-  const handleOpenForm = (lead = null) => {
-    setLeadToEdit(lead);
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setLeadToEdit(null);
-  };
-
-  // Auth handlers
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setShowRegister(false);
+    navigate('/dashboard'); // Redirect after login to /dashboard
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setActivePage('dashboard');
-  };
-
-  // New handler to navigate to Profile page
-  const handleProfileClick = () => {
-    setActivePage('profile');
+    navigate('/login');
   };
 
   if (!isLoggedIn) {
@@ -113,38 +106,60 @@ function App() {
   }
 
   return (
-    <MainLayout
-      activePage={activePage}
-      onNavigate={setActivePage}
-      onLogout={handleLogout}
-      onProfileClick={handleProfileClick} // <-- new prop here
-    >
-      {activePage === 'dashboard' && (
-        <Dashboard activePage={activePage} setActivePage={setActivePage} />
-      )}
+    <MainLayout onLogout={handleLogout}>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
 
-      {activePage === 'leads' && !isFormOpen && (
-        <LeadsPage
-          leads={leads}
-          setLeads={setLeads}
-          onDeleteLead={handleDeleteLead}
-          onOpenForm={handleOpenForm}
+        {/* Lead listing + inline Add/Edit form */}
+        <Route
+          path="/leads"
+          element={
+            !isFormOpen ? (
+              <LeadsPage
+                leads={leads}
+                setLeads={setLeads}
+                onDeleteLead={handleDeleteLead}
+                onOpenForm={(lead) => {
+                  setLeadToEdit(lead);
+                  setIsFormOpen(true);
+                }}
+              />
+            ) : (
+              <AddLeadForm
+                onSubmit={leadToEdit ? handleUpdateLead : handleAddLead}
+                leadToEdit={leadToEdit}
+                closeForm={() => {
+                  setIsFormOpen(false);
+                  setLeadToEdit(null);
+                }}
+              />
+            )
+          }
         />
-      )}
 
-      {activePage === 'leads' && isFormOpen && (
-        <AddLeadForm
-          onSubmit={leadToEdit ? handleUpdateLead : handleAddLead}
-          leadToEdit={leadToEdit}
-          closeForm={handleCloseForm}
+        {/* New Lead Details page route */}
+        <Route
+          path="/leads/:id"
+          element={<LeadDetailsPage onDeleteLead={handleDeleteLead} />}
         />
-      )}
 
-      {activePage === 'settings' && <Settings />}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
-      {activePage === 'profile' && <ProfilePage />} {/* new ProfilePage render */}
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+
+        {/* Catch all fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+      </Routes>
     </MainLayout>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <AppWrapper />
+    </Router>
+  );
+}
