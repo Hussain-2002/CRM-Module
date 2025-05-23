@@ -4,7 +4,7 @@ import Header from './Header';
 
 const MainLayout = ({ children, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const location = useLocation(); // to get current URL
+  const location = useLocation();
   const navigate = useNavigate();
 
   const currentPath = location.pathname;
@@ -35,6 +35,16 @@ const MainLayout = ({ children, onLogout }) => {
               >
                 Leads
               </Link>
+
+              <Link
+                to="/tasks"  // ✅ use lowercase and plural to match the route in App.js
+                className={`hover:bg-gray-700 p-2 rounded text-left ${
+                  currentPath === '/tasks' ? 'bg-gray-700' : ''
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                Tasks
+              </Link>
             </nav>
           </div>
 
@@ -57,13 +67,11 @@ const MainLayout = ({ children, onLogout }) => {
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
           onProfileClick={() => {
             setSidebarOpen(false);
-            navigate('/profile'); // use react-router navigation
+            navigate('/profile');
           }}
           onLogout={onLogout}
         />
-        <main className="p-6 overflow-auto">
-          {children}
-        </main>
+        <main className="p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );

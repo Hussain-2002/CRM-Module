@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -10,10 +11,11 @@ import axios from 'axios';
 
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadPage';
-import LeadDetailsPage from './pages/LeadDetailsPage'; // <-- New import
+import LeadDetailsPage from './pages/LeadDetailsPage';
 import AddLeadForm from './Components/AddLeadForm';
 import Settings from './pages/Settings';
 import ProfilePage from './pages/Profile';
+import TaskPage from './pages/TaskPage'; // ✅ Import your task main page
 import MainLayout from './Components/MainLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -28,9 +30,7 @@ function AppWrapper() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchLeads();
-    }
+    if (isLoggedIn) fetchLeads();
   }, [isLoggedIn]);
 
   const fetchLeads = async () => {
@@ -39,7 +39,6 @@ function AppWrapper() {
       setLeads(res.data);
     } catch (error) {
       console.error('Failed to fetch leads:', error);
-      alert('Failed to load leads.');
     }
   };
 
@@ -50,7 +49,6 @@ function AppWrapper() {
       setIsFormOpen(false);
     } catch (error) {
       console.error('Add lead error:', error);
-      alert('Failed to add lead.');
     }
   };
 
@@ -64,26 +62,23 @@ function AppWrapper() {
       setLeadToEdit(null);
     } catch (error) {
       console.error('Update lead error:', error);
-      alert('Failed to update lead.');
     }
   };
 
   const handleDeleteLead = async (id) => {
     if (!window.confirm('Are you sure you want to delete this lead?')) return;
-
     try {
       await axios.delete(`http://localhost:5000/api/leads/${id}`);
       setLeads((prev) => prev.filter((lead) => lead._id !== id));
     } catch (error) {
       console.error('Delete lead error:', error);
-      alert('Failed to delete lead.');
     }
   };
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setShowRegister(false);
-    navigate('/dashboard'); // Redirect after login to /dashboard
+    navigate('/dashboard');
   };
 
   const handleLogout = () => {
@@ -109,8 +104,6 @@ function AppWrapper() {
     <MainLayout onLogout={handleLogout}>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* Lead listing + inline Add/Edit form */}
         <Route
           path="/leads"
           element={
@@ -136,20 +129,14 @@ function AppWrapper() {
             )
           }
         />
-
-        {/* New Lead Details page route */}
         <Route
           path="/leads/:id"
           element={<LeadDetailsPage onDeleteLead={handleDeleteLead} />}
         />
-
+        <Route path="/tasks" element={<TaskPage />} /> {/* ✅ Task page route */}
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<ProfilePage />} />
-
-        {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" />} />
-
-        {/* Catch all fallback */}
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </MainLayout>

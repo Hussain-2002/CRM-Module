@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import leadRoutes from './routes/leadRoutes.js';
-import authRoutes from './routes/authRoutes.js';  // <-- ES module import
+import authRoutes from './routes/authRoutes.js'; 
+import taskRoutes from './routes/taskRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -14,7 +15,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/leads', leadRoutes);
-app.use('/api/auth', authRoutes);  // use imported router directly
+app.use('/api/auth', authRoutes); 
+app.use('/api/tasks', taskRoutes); 
 
 app.use((req, res) => {
   res.status(404).json({ message: 'API route not found' });

@@ -87,59 +87,99 @@ export const deleteLead = async (req, res) => {
 export const getLeadStats = async (req, res) => {
   try {
     const totalLeads = await Lead.countDocuments();
+    const statuses = ['converted', 'contacted', 'qualified', 'unqualified', 'new'];
+    const statusCounts = {};
 
-    const statusCounts = await Lead.aggregate([
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    const statusSummary = {};
-    statusCounts.forEach(item => {
-      statusSummary[item._id || 'unknown'] = item.count;
-    });
+    for (const status of statuses) {
+      statusCounts[status] = await Lead.countDocuments({ status });
+    }
 
     res.status(200).json({
       totalLeads,
-      statusCounts: statusSummary
+      ...statusCounts
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get stats', error: error.message });
   }
 };
 
-// 📊 Bar chart: Get yearly and monthly trends
+// 📊 Bar chart: Enhanced trends with date filtering and status grouping
 export const getLeadTrends = async (req, res) => {
   try {
-    const yearly = await Lead.aggregate([
-      {
-        $group: {
-          _id: { $year: '$createdAt' },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { '_id': 1 } }
-    ]);
+    const { startDate, endDate, type = 'year' } = req.query;
 
-    const monthly = await Lead.aggregate([
+    const matchStage = {};
+    if (startDate && endDate) {
+      matchStage.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // Group by status + date
+    const groupId = type === 'month'
+      ? { year: { $year: '$createdAt' }, month: { $month: '$createdAt' }, status: '$status' }
+      : { year: { $year: '$createdAt' }, status: '$status' };
+
+    const aggregationPipeline = [
+      { $match: matchStage },
       {
         $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' }
-          },
-          count: { $sum: 1 }
-        }
+          _id: groupId,
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { '_id.year': 1, '_id.month': 1 } }
-    ]);
+      {
+        $sort: {
+          '_id.year': 1,
+          ...(type === 'month' ? { '_id.month': 1 } : {}),
+          '_id.status': 1,
+        },
+      },
+    ];
+
+    const results = await Lead.aggregate(aggregationPipeline);
+
+    // Extract unique labels and statuses
+    const labelsSet = new Set();
+    const statusesSet = new Set();
+
+    results.forEach(({ _id }) => {
+      const { year, month, status } = _id;
+      const label = type === 'month' ? `${year}-${String(month).padStart(2, '0')}` : `${year}`;
+      labelsSet.add(label);
+      statusesSet.add(status);
+    });
+
+    const labels = Array.from(labelsSet).sort();
+    const statuses = Array.from(statusesSet);
+
+    // Initialize datasets
+    const datasets = {};
+    statuses.forEach(status => {
+      datasets[status] = new Array(labels.length).fill(0);
+    });
+
+    // Fill datasets with actual data
+    results.forEach(({ _id, count }) => {
+      const { year, month, status } = _id;
+      const label = type === 'month' ? `${year}-${String(month).padStart(2, '0')}` : `${year}`;
+      const index = labels.indexOf(label);
+      if (index !== -1) {
+        datasets[status][index] = count;
+      }
+    });
+
+    // Calculate total per status
+    const totalPerStatus = {};
+    statuses.forEach(status => {
+      totalPerStatus[status] = datasets[status].reduce((sum, val) => sum + val, 0);
+    });
 
     res.status(200).json({
-      yearly,
-      monthly
+      labels,
+      datasets,
+      totalPerStatus
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get lead trends', error: error.message });
