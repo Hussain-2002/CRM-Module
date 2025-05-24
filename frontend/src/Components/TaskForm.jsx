@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import axios from 'axios';
 
-const TaskForm = ({ onTaskCreated }) => {
-  const [formData, setFormData] = useState({
-    ownerName: '',
-    subject: '',
-    dueDate: '',
-    contact: '',
-    account: '',
-    status: 'Not Started',
-    priority: 'Medium',
-    reminder: false,
-    repeat: 'None',
-    description: '',
-  });
+const TaskForm = ({ onSubmit, taskToEdit = null, onCancel }) => {
+  const [formData, setFormData] = useState(
+    taskToEdit || {
+      ownerName: '',
+      subject: '',
+      dueDate: '',
+      contact: '',
+      account: '',
+      status: 'Not Started',
+      priority: 'Medium',
+      reminder: false,
+      repeat: 'None',
+      description: '',
+    }
+  );
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,15 +27,13 @@ const TaskForm = ({ onTaskCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.ownerName || !formData.subject || !formData.dueDate) {
       alert('Please fill in all required fields: Owner Name, Subject, Due Date');
       return;
     }
 
     try {
-      await axios.post('http://localhost:5000/api/tasks', formData);
-      onTaskCreated();
+      await onSubmit(formData);
       setFormData({
         ownerName: '',
         subject: '',
@@ -56,8 +55,7 @@ const TaskForm = ({ onTaskCreated }) => {
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded-xl mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Text Inputs */}
-        {[
+        {[ 
           { name: 'ownerName', label: 'Owner Name' },
           { name: 'subject', label: 'Subject' },
           { name: 'dueDate', label: 'Due Date', type: 'date' },
@@ -76,7 +74,6 @@ const TaskForm = ({ onTaskCreated }) => {
           </div>
         ))}
 
-        {/* Dropdowns */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
           <select
@@ -119,7 +116,6 @@ const TaskForm = ({ onTaskCreated }) => {
           </select>
         </div>
 
-        {/* Reminder (Checkbox) */}
         <div className="flex items-center mt-6">
           <input
             type="checkbox"
@@ -131,7 +127,6 @@ const TaskForm = ({ onTaskCreated }) => {
           <label className="text-sm font-medium text-gray-700">Set Reminder</label>
         </div>
 
-        {/* Description */}
         <div className="md:col-span-2 lg:col-span-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
@@ -144,12 +139,21 @@ const TaskForm = ({ onTaskCreated }) => {
         </div>
       </div>
 
-      <div className="mt-4 text-right">
+      <div className="mt-4 flex justify-between">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+        )}
         <button
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Create Task
+          {taskToEdit ? 'Update Task' : 'Create Task'}
         </button>
       </div>
     </form>

@@ -27,6 +27,7 @@ const TaskPage = () => {
   const handleCreate = () => {
     setTaskToEdit(null);
     setShowForm(true);
+    setSelectedTask(null);
   };
 
   const handleSaveTask = async (taskData) => {
@@ -41,10 +42,12 @@ const TaskPage = () => {
       setTaskToEdit(null);
     } catch (err) {
       console.error('Error saving task', err);
+      alert('Failed to save task. Please check the input.');
     }
   };
 
   const handleDelete = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/tasks/${taskId}`);
       fetchTasks();
@@ -63,12 +66,14 @@ const TaskPage = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-semibold">Tasks</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Create Task
-        </button>
+        {!showForm && (
+          <button
+            onClick={handleCreate}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Create Task
+          </button>
+        )}
       </div>
 
       {showForm && (
