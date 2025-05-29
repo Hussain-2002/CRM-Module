@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -15,10 +14,11 @@ import LeadDetailsPage from './pages/LeadDetailsPage';
 import AddLeadForm from './Components/AddLeadForm';
 import Settings from './pages/Settings';
 import ProfilePage from './pages/Profile';
-import TaskPage from './pages/TaskPage'; // ✅ Import your task main page
+import TaskPage from './pages/TaskPage';
 import MainLayout from './Components/MainLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import CreateTaskPage from './pages/CreateTaskPage'; // ✅ Import new page
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -133,7 +133,8 @@ function AppWrapper() {
           path="/leads/:id"
           element={<LeadDetailsPage onDeleteLead={handleDeleteLead} />}
         />
-        <Route path="/tasks" element={<TaskPage />} /> {/* ✅ Task page route */}
+        <Route path="/tasks" element={<TaskPage />} />
+        <Route path="/tasks/create" element={<CreateTaskPage />} /> {/* ✅ This is the key fix */}
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />

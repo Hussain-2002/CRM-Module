@@ -3,46 +3,54 @@ import mongoose from 'mongoose';
 const taskSchema = new mongoose.Schema({
   ownerName: {
     type: String,
-    required: true
+    required: true,
   },
   subject: {
     type: String,
-    required: true
+    required: true,
   },
   dueDate: {
     type: Date,
-    required: true
+    required: true,
   },
   contact: {
-    type: String, // Could later be changed to ObjectId referencing Contact
-    default: ''
+    type: String,
+    default: '',
   },
   account: {
-    type: String, // Could later be changed to ObjectId referencing Account
-    default: ''
+    type: String,
+    default: '',
   },
   status: {
     type: String,
-    enum: ['Not Started', 'In Progress', 'Completed', 'Deferred', 'Waiting on someone else'],
-    default: 'Not Started'
+    enum: ['Not Started', 'In Progress', 'Completed', 'Deferred', 'Waiting for input'],
+    default: 'Deferred',
   },
   priority: {
     type: String,
     enum: ['High', 'Medium', 'Low'],
-    default: 'Medium'
+    default: 'Medium',
   },
   reminder: {
     type: Boolean,
-    default: false
+    default: false,
   },
   repeat: {
     type: String,
     enum: ['None', 'Daily', 'Weekly', 'Monthly', 'Yearly'],
-    default: 'None'
+    default: 'None',
   },
   description: {
     type: String,
-    default: ''
+    default: '',
+  },
+  assignedTo: {
+    type: String,
+    default: '',
+  },
+  tags: {
+    type: [String],
+    default: [],
   },
 }, { timestamps: true });
 
