@@ -18,7 +18,9 @@ import TaskPage from './pages/TaskPage';
 import MainLayout from './Components/MainLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import CreateTaskPage from './pages/CreateTaskPage'; // ✅ Import new page
+import CreateTaskPage from './pages/CreateTaskPage';
+
+import TaskDetailsPage from './pages/TaskDetailsPage';
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -134,7 +136,8 @@ function AppWrapper() {
           element={<LeadDetailsPage onDeleteLead={handleDeleteLead} />}
         />
         <Route path="/tasks" element={<TaskPage />} />
-        <Route path="/tasks/create" element={<CreateTaskPage />} /> {/* ✅ This is the key fix */}
+        <Route path="/tasks/create" element={<CreateTaskPage />} />
+        <Route path="/tasks/:id" element={<TaskDetailsPage/>} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />

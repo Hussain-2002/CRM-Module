@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { FiEye, FiEdit2, FiTrash2 } from 'react-icons/fi';
 
-// Capitalize full name (e.g., "john doe" -> "John Doe")
 const capitalizeWords = (str) =>
   str.replace(/\b\w/g, (char) => char.toUpperCase());
 
-// Capitalize first letter of email (e.g., "john@example.com" -> "John@example.com")
 const capitalizeFirstLetter = (str) =>
   str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -99,23 +97,14 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
         <table className="min-w-full table-auto">
           <thead className="bg-gray-100">
             <tr>
-              <th
-                className="px-4 py-2 border cursor-pointer select-none"
-                onClick={() => handleSort('firstName')}
-              >
+              <th className="px-4 py-2 border cursor-pointer" onClick={() => handleSort('firstName')}>
                 Name{renderSortArrow('firstName')}
               </th>
-              <th
-                className="px-4 py-2 border cursor-pointer select-none"
-                onClick={() => handleSort('email')}
-              >
+              <th className="px-4 py-2 border cursor-pointer" onClick={() => handleSort('email')}>
                 Email{renderSortArrow('email')}
               </th>
               <th className="px-4 py-2 border">Phone</th>
-              <th
-                className="px-4 py-2 border cursor-pointer select-none"
-                onClick={() => handleSort('status')}
-              >
+              <th className="px-4 py-2 border cursor-pointer" onClick={() => handleSort('status')}>
                 Status{renderSortArrow('status')}
               </th>
               <th className="px-4 py-2 border">Actions</th>
@@ -130,25 +119,21 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
                   <td className="px-4 py-2 border">{fullName}</td>
                   <td className="px-4 py-2 border">{email}</td>
                   <td className="px-4 py-2 border">{lead.phone || 'N/A'}</td>
-                  <td className="px-4 py-2 border">
-                    <span className="text-gray-700 px-2 py-1 rounded capitalize">
-                      {lead.status || 'N/A'}
-                    </span>
-                  </td>
+                  <td className="px-4 py-2 border capitalize text-gray-700">{lead.status || 'N/A'}</td>
                   <td className="px-4 py-2 border text-center space-x-3">
                     <button
                       onClick={() => onViewDetails(lead)}
-                      aria-label="View lead details"
-                      className="hover:text-blue-600 cursor-pointer"
+                      aria-label="View lead"
+                      className="hover:text-blue-600"
                     >
-                      <EyeIcon className="h-5 w-5" />
+                      <FiEye className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => onEdit(lead)}
                       aria-label="Edit lead"
-                      className="hover:text-yellow-600 cursor-pointer"
+                      className="hover:text-yellow-600"
                     >
-                      <PencilIcon className="h-5 w-5" />
+                      <FiEdit2 className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => {
@@ -156,9 +141,9 @@ const LeadsTable = ({ leads, onEdit, onDelete, onViewDetails }) => {
                         setShowDeleteConfirm(true);
                       }}
                       aria-label="Delete lead"
-                      className="hover:text-red-600 cursor-pointer"
+                      className="hover:text-red-600"
                     >
-                      <TrashIcon className="h-5 w-5" />
+                      <FiTrash2 className="h-5 w-5" />
                     </button>
                   </td>
                 </tr>

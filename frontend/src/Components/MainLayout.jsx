@@ -45,6 +45,7 @@ const MainLayout = ({ children, onLogout }) => {
               >
                 Tasks
               </Link>
+            
             </nav>
           </div>
 
