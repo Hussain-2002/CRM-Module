@@ -19,7 +19,6 @@ import MainLayout from './Components/MainLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateTaskPage from './pages/CreateTaskPage';
-
 import TaskDetailsPage from './pages/TaskDetailsPage';
 
 function AppWrapper() {

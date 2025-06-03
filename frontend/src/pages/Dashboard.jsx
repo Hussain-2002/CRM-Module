@@ -10,7 +10,10 @@ const BASE_URL = 'http://localhost:5000/api/leads';
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState({});
-  const [barData, setBarData] = useState({});
+  const [metrics, setMetrics] = useState({});
+  const [barData, setBarData] = useState({ labels: [], datasets: {} });
+  const [retentionTrend, setRetentionTrend] = useState([]);
+  const [winRateTrend, setWinRateTrend] = useState([]);
   const [viewMode, setViewMode] = useState('year');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -18,18 +21,21 @@ const Dashboard = () => {
   const barChartRef = useRef(null);
   const exportRef = useRef(null);
 
+  // Initial fetch on mount
   useEffect(() => {
     fetchLeads();
     fetchStats();
+    fetchMetrics();
   }, []);
 
+  // Fetch bar chart data on viewMode or date range change
   useEffect(() => {
-    if (viewMode === 'range' && (!startDate || !endDate)) return;
-
     if (viewMode === 'range') {
+      if (!startDate || !endDate) return; // Wait for both dates
       fetchBarData(viewMode, startDate.toISOString(), endDate.toISOString());
     } else {
       fetchBarData(viewMode);
+      // Clear date range if switching away from range mode
       setStartDate(null);
       setEndDate(null);
     }
@@ -54,6 +60,30 @@ const Dashboard = () => {
     }
   };
 
+  const fetchMetrics = async () => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/metrics`);
+      setMetrics(data);
+
+      // Generate smooth trend data based on current values for demo
+      const retentionRate = parseFloat(data.customerRetentionRate) || 0;
+      const winRate = parseFloat(data.leadWinRate) || 0;
+
+      const retention = Array.from({ length: 8 }, (_, i) =>
+        retentionRate + Math.sin(i) * 5
+      ).map((val) => Number(val.toFixed(2)));
+
+      const winRateArr = Array.from({ length: 8 }, (_, i) =>
+        winRate + Math.cos(i) * 4
+      ).map((val) => Number(val.toFixed(2)));
+
+      setRetentionTrend(retention);
+      setWinRateTrend(winRateArr);
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+    }
+  };
+
   const fetchBarData = async (type = 'year', startISO = null, endISO = null) => {
     try {
       let url = `${BASE_URL}/bar-stats?type=${type}`;
@@ -64,23 +94,6 @@ const Dashboard = () => {
       setBarData(data);
     } catch (error) {
       console.error('Error fetching bar data:', error);
-    }
-  };
-
-  const handleExportChart = () => {
-    try {
-      const chartInstance = barChartRef.current?.chart || barChartRef.current;
-      const base64Image = chartInstance?.toBase64Image?.();
-      if (base64Image) {
-        const link = document.createElement('a');
-        link.href = base64Image;
-        link.download = `leads-${viewMode}-chart.png`;
-        link.click();
-      } else {
-        console.warn('Chart instance or image is not available');
-      }
-    } catch (err) {
-      console.error('Chart export error:', err);
     }
   };
 
@@ -97,20 +110,22 @@ const Dashboard = () => {
     });
   };
 
+  const handleExportChart = () => {
+
+    handleExportPDF();
+  };
+
   return (
-    <div ref={exportRef}>
+    <div ref={exportRef} className="p-6">
       <h1 className="text-3xl font-bold mb-6">Welcome to Goanny Technology Dashboard</h1>
 
-      {/* All summary cards use same color & size */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
-        {/* Total Leads */}
         <SummaryCard
           title="Total Leads"
           value={leads.length}
           bgColor="bg-gray-100"
           textColor="text-gray-800"
         />
-        {/* Converted Leads */}
         <SummaryCard
           title="Converted Leads"
           value={stats.converted || 0}
@@ -118,9 +133,8 @@ const Dashboard = () => {
           textColor="text-gray-800"
         />
 
-        {/* Other status counts */}
         {Object.entries(stats).map(([status, count]) => {
-          if (status === 'converted') return null; // Already shown
+          if (status === 'converted') return null;
           return (
             <SummaryCard
               key={status}
@@ -131,10 +145,23 @@ const Dashboard = () => {
             />
           );
         })}
+
+        <SummaryCard
+          title="Customer Retention Rate"
+          value={`${metrics.customerRetentionRate || 0}%`}
+          bgColor="bg-gray-100"
+          textColor="text-gray-800"
+        />
+        <SummaryCard
+          title="Lead Win Rate"
+          value={`${metrics.leadWinRate || 0}%`}
+          bgColor="bg-gray-100"
+          textColor="text-gray-800"
+        />
       </div>
 
       <Chart
-        key={viewMode}
+        key={viewMode} // helps reset chart when mode changes
         stats={stats}
         barData={barData}
         viewMode={viewMode}
@@ -145,6 +172,8 @@ const Dashboard = () => {
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
+        retentionData={retentionTrend}
+        winRateData={winRateTrend}
       />
 
       <div className="mt-6 flex space-x-4">

@@ -38,7 +38,7 @@ export const importLeads = async (req, res) => {
   }
 };
 
-// Get all leads (optionally filtered)
+// Get all leads
 export const getLeads = async (req, res) => {
   try {
     const { status } = req.query;
@@ -83,7 +83,7 @@ export const deleteLead = async (req, res) => {
   }
 };
 
-// 📊 Pie chart: Get lead analytics data (status distribution)
+// Pie chart stats (status breakdown)
 export const getLeadStats = async (req, res) => {
   try {
     const totalLeads = await Lead.countDocuments();
@@ -103,7 +103,7 @@ export const getLeadStats = async (req, res) => {
   }
 };
 
-// 📊 Bar chart: Enhanced trends with date filtering and status grouping
+// Bar chart trends
 export const getLeadTrends = async (req, res) => {
   try {
     const { startDate, endDate, type = 'year' } = req.query;
@@ -116,7 +116,6 @@ export const getLeadTrends = async (req, res) => {
       };
     }
 
-    // Group by status + date
     const groupId = type === 'month'
       ? { year: { $year: '$createdAt' }, month: { $month: '$createdAt' }, status: '$status' }
       : { year: { $year: '$createdAt' }, status: '$status' };
@@ -140,7 +139,6 @@ export const getLeadTrends = async (req, res) => {
 
     const results = await Lead.aggregate(aggregationPipeline);
 
-    // Extract unique labels and statuses
     const labelsSet = new Set();
     const statusesSet = new Set();
 
@@ -154,13 +152,11 @@ export const getLeadTrends = async (req, res) => {
     const labels = Array.from(labelsSet).sort();
     const statuses = Array.from(statusesSet);
 
-    // Initialize datasets
     const datasets = {};
     statuses.forEach(status => {
       datasets[status] = new Array(labels.length).fill(0);
     });
 
-    // Fill datasets with actual data
     results.forEach(({ _id, count }) => {
       const { year, month, status } = _id;
       const label = type === 'month' ? `${year}-${String(month).padStart(2, '0')}` : `${year}`;
@@ -170,7 +166,6 @@ export const getLeadTrends = async (req, res) => {
       }
     });
 
-    // Calculate total per status
     const totalPerStatus = {};
     statuses.forEach(status => {
       totalPerStatus[status] = datasets[status].reduce((sum, val) => sum + val, 0);
@@ -183,5 +178,68 @@ export const getLeadTrends = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get lead trends', error: error.message });
+  }
+};
+
+// 📈 Overall retention and win rate
+export const getLeadMetrics = async (req, res) => {
+  try {
+    const totalLeads = await Lead.countDocuments();
+    const convertedLeads = await Lead.countDocuments({ status: 'converted' });
+
+    const customerRetentionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+    const leadWinRate = customerRetentionRate;
+
+    res.status(200).json({
+      totalLeads,
+      convertedLeads,
+      customerRetentionRate: customerRetentionRate.toFixed(2),
+      leadWinRate: leadWinRate.toFixed(2)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get lead metrics', error: error.message });
+  }
+};
+
+// 📈 Monthly retention and win rate trend data (Updated with fixes)
+export const getMonthlyMetrics = async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+
+    const monthlyStats = await Lead.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${currentYear}-01-01`),
+            $lte: new Date(`${currentYear}-12-31`)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { month: { $month: "$createdAt" }, status: "$status" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const retentionData = Array(12).fill(0);
+    const totalLeadsPerMonth = Array(12).fill(0);
+
+    monthlyStats.forEach(({ _id, count }) => {
+      const monthIndex = _id.month - 1;
+      totalLeadsPerMonth[monthIndex] += count;
+      if (_id.status === 'converted') {
+        retentionData[monthIndex] += count;  // accumulate converted leads per month
+      }
+    });
+
+    const winRateData = retentionData.map((retained, i) =>
+      totalLeadsPerMonth[i] > 0 ? (retained / totalLeadsPerMonth[i]) * 100 : 0
+    );
+
+    res.status(200).json({ retentionData, winRateData });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get monthly metrics', error: error.message });
   }
 };
