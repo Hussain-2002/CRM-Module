@@ -1,13 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 
 const MainLayout = ({ children, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const currentPath = location.pathname;
+
+  // Apply or remove dark class from <html>
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = savedTheme === 'dark';
+    setIsDarkMode(prefersDark);
+    document.documentElement.classList.toggle('dark', prefersDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setIsDarkMode(!isDarkMode);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
 
   return (
     <div className="flex bg-white text-black dark:bg-gray-900 dark:text-white min-h-screen">
@@ -37,7 +53,7 @@ const MainLayout = ({ children, onLogout }) => {
               </Link>
 
               <Link
-                to="/tasks"  // ✅ use lowercase and plural to match the route in App.js
+                to="/tasks"
                 className={`hover:bg-gray-700 p-2 rounded text-left ${
                   currentPath === '/tasks' ? 'bg-gray-700' : ''
                 }`}
@@ -45,7 +61,6 @@ const MainLayout = ({ children, onLogout }) => {
               >
                 Tasks
               </Link>
-            
             </nav>
           </div>
 
@@ -59,6 +74,17 @@ const MainLayout = ({ children, onLogout }) => {
             >
               ⚙️ Settings
             </Link>
+
+            {/* Dark Mode Toggle */}
+            <div className="flex items-center justify-between mt-4">
+              <span>🌗 Theme</span>
+              <button
+                onClick={toggleDarkMode}
+                className="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-sm"
+              >
+                {isDarkMode ? 'Dark' : 'Light'}
+              </button>
+            </div>
           </div>
         </aside>
       )}

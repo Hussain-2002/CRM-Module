@@ -175,15 +175,6 @@ const Dashboard = () => {
         retentionData={retentionTrend}
         winRateData={winRateTrend}
       />
-
-      <div className="mt-6 flex space-x-4">
-        <button
-          onClick={handleExportPDF}
-          className="text-sm bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-        >
-          Export Dashboard PDF
-        </button>
-      </div>
     </div>
   );
 };
