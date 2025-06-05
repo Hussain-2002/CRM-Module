@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const AddLeadForm = ({ onSubmit, leadToEdit, closeForm }) => {
   const [formData, setFormData] = useState({
@@ -27,15 +28,33 @@ const AddLeadForm = ({ onSubmit, leadToEdit, closeForm }) => {
     description: '',
   });
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (leadToEdit) {
       setFormData(prev => ({ ...prev, ...leadToEdit }));
     }
   }, [leadToEdit]);
 
+  // Detect route change: if leaving /leads route, close the form & redirect to leads page
+  useEffect(() => {
+    // Your lead listing route path, e.g. "/leads"
+    const leadPagePath = '/leads';
+
+    if (!location.pathname.startsWith(leadPagePath)) {
+      // Close the form
+      closeForm();
+      // Redirect user to lead page (if not already there)
+      if (location.pathname !== leadPagePath) {
+        navigate(leadPagePath, { replace: true });
+      }
+    }
+  }, [location.pathname, closeForm, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));

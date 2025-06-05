@@ -17,8 +17,8 @@ const CreateTaskPage = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
-      <h1 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">
         Create Task
       </h1>
       <TaskForm onSubmit={handleCreate} />

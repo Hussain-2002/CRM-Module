@@ -8,6 +8,7 @@ import { HiOutlineDocumentDownload } from 'react-icons/hi';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Download helper
 const downloadFile = (content, filename, mimeType = 'text/csv;charset=utf-8;') => {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -118,17 +119,17 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
   };
 
   return (
-    <div className="p-6">
+    <div>
       <h2 className="text-2xl font-bold mb-4">Leads</h2>
 
       <div className="flex items-center flex-wrap gap-4 mb-4">
-                <select
+        <select
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
             setCurrentPage(1);
           }}
-          className="border rounded px-4 py-2 w-full sm:w-48 bg-white text-black dark:bg-gray-800 dark:text-white dark:border-gray-600"
+          className="border rounded px-4 py-2 w-full sm:w-48"
           disabled={importing || exporting}
         >
           <option value="">All Status</option>
@@ -138,7 +139,6 @@ const LeadsPage = ({ leads, setLeads, onDeleteLead, onOpenForm }) => {
           <option value="qualified">Qualified</option>
           <option value="unqualified">Unqualified</option>
         </select>
-
 
         <button
           onClick={() => onOpenForm(null)}
