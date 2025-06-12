@@ -52,6 +52,10 @@ const taskSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  image:{
+    data: Buffer,
+    contentType: String,
+  }
 }, { timestamps: true });
 
 const Task = mongoose.model('Task', taskSchema);

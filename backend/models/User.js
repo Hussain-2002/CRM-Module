@@ -6,10 +6,10 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String, required: true, trim: true },
   phoneNumber: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true }, // Hashed password
+  password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'salesrep'], // ✅ added salesrep
     default: 'user',
   },
   createdAt: { type: Date, default: Date.now },

@@ -10,8 +10,8 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // default role
-    adminSecretCode: '', // for admin verification
+    role: 'user',
+    adminSecretCode: '',
     termsAccepted: false,
   });
 
@@ -57,7 +57,7 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
       });
 
       console.log('Registered:', response.data);
-      onRegisterSuccess(); // e.g. redirect to login
+      onRegisterSuccess();
     } catch (error) {
       setErrorMsg(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {
@@ -73,7 +73,6 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
         </div>
         {errorMsg && <p className="text-red-600 text-sm text-center">{errorMsg}</p>}
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* First, Middle, Last Name */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1">First Name *</label>
@@ -99,6 +98,7 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
               />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Last Name *</label>
             <input
@@ -112,7 +112,6 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
             />
           </div>
 
-          {/* Phone and Email */}
           <div>
             <label className="block text-sm font-medium mb-1">Phone Number *</label>
             <input
@@ -125,6 +124,7 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
               className="w-full rounded border px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Email Address *</label>
             <input
@@ -138,7 +138,6 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
             />
           </div>
 
-          {/* Role selection */}
           <div>
             <label className="block text-sm font-medium mb-1">Role *</label>
             <select
@@ -150,10 +149,10 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
+              <option value="salesrep">Sales Rep</option>
             </select>
           </div>
 
-          {/* Admin secret code (only if role is admin) */}
           {formData.role === 'admin' && (
             <div>
               <label className="block text-sm font-medium mb-1">Admin Secret Code *</label>
@@ -164,12 +163,11 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
                 onChange={handleChange}
                 placeholder="Enter admin secret code"
                 className="w-full rounded border px-3 py-2"
-                required={formData.role === 'admin'}
+                required
               />
             </div>
           )}
 
-          {/* Password and Confirm */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <label className="block text-sm font-medium mb-1">Password *</label>
@@ -212,7 +210,6 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* Terms */}
           <div className="flex items-center">
             <input
               name="termsAccepted"
@@ -223,11 +220,13 @@ function RegisterPage({ onRegisterSuccess, onSwitchToLogin }) {
               required
             />
             <label className="ml-2 text-sm">
-              I accept the <a href="#" className="text-blue-600 underline">Terms and Conditions</a>
+              I accept the{' '}
+              <a href="#" className="text-blue-600 underline">
+                Terms and Conditions
+              </a>
             </label>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading || !formData.termsAccepted}

@@ -20,6 +20,7 @@ const LoginPage = ({ onLoginSuccess, onSwitchToRegister }) => {
       });
 
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       onLoginSuccess();
       // Removed navigate('/dashboard') to prevent duplicate rendering
     } catch (err) {

@@ -20,6 +20,11 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateTaskPage from './pages/CreateTaskPage';
 import TaskDetailsPage from './pages/TaskDetailsPage';
+import QuotationList from './pages/Quotation/QuotationList';
+import QuotationDetails from './pages/Quotation/QuotationDetails';
+import CreateQuotationForm from './pages/Quotation/CreateQuotation';
+
+
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -105,6 +110,7 @@ function AppWrapper() {
     <MainLayout onLogout={handleLogout}>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
+
         <Route
           path="/leads"
           element={
@@ -134,13 +140,25 @@ function AppWrapper() {
           path="/leads/:id"
           element={<LeadDetailsPage onDeleteLead={handleDeleteLead} />}
         />
+
         <Route path="/tasks" element={<TaskPage />} />
         <Route path="/tasks/create" element={<CreateTaskPage />} />
-        <Route path="/tasks/:id" element={<TaskDetailsPage/>} />
+        <Route path="/tasks/:id" element={<TaskDetailsPage />} />
+
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<ProfilePage />} />
+
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="*" element={<Navigate to="/dashboard" />} />
+
+        <Route path="/quotations" element={<QuotationList />} />
+        <Route path="/quotations/create" element={<CreateQuotationForm />} />
+        <Route path="/quotations/:id" element={<QuotationDetails />} />
+
+
+
+
+
       </Routes>
     </MainLayout>
   );

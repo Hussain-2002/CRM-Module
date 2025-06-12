@@ -37,7 +37,7 @@ const MainLayout = ({ children, onLogout }) => {
               </Link>
 
               <Link
-                to="/tasks"  // ✅ use lowercase and plural to match the route in App.js
+                to="/tasks"
                 className={`hover:bg-gray-700 p-2 rounded text-left ${
                   currentPath === '/tasks' ? 'bg-gray-700' : ''
                 }`}
@@ -45,7 +45,17 @@ const MainLayout = ({ children, onLogout }) => {
               >
                 Tasks
               </Link>
-            
+
+              {/* NEW Quotations Link */}
+              <Link
+                to="/quotations"
+                className={`hover:bg-gray-700 p-2 rounded text-left ${
+                  currentPath.startsWith('/quotations') ? 'bg-gray-700' : ''
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                Quotations
+              </Link>
             </nav>
           </div>
 

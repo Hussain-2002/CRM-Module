@@ -83,6 +83,7 @@ const TaskDetailsPage = () => {
               <p><strong>Repeat:</strong> {task.repeat}</p>
               <p><strong>Assigned To:</strong> {task.assignedTo || 'N/A'}</p>
               <p className="sm:col-span-2"><strong>Description:</strong> {task.description || '—'}</p>
+              
               {task.tags?.length > 0 && (
                 <p className="sm:col-span-2">
                   <strong>Tags:</strong>{' '}
