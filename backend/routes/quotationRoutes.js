@@ -4,26 +4,27 @@ import {
   getAllQuotations,
   getQuotationById,
   updateQuotation,
-  deleteQuotation
+  deleteQuotation,
 } from '../controllers/quotationController.js';
-import { protect } from '../middleware/authMiddleware.js'; // ✅ import protect
+
+import { sendQuotationEmail } from '../controllers/emailController.js';
+import { downloadQuotationPDF } from '../controllers/pdfController.js';
+
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// @route   POST /api/quotations
-// @desc    Create a new quotation (protected)
+// Quotation CRUD
 router.post('/', protect, createQuotation);
-
-// @route   GET /api/quotations
 router.get('/', protect, getAllQuotations);
-
-// @route   GET /api/quotations/:id
 router.get('/:id', protect, getQuotationById);
-
-// @route   PUT /api/quotations/:id
 router.put('/:id', protect, updateQuotation);
-
-// @route   DELETE /api/quotations/:id
 router.delete('/:id', protect, deleteQuotation);
+
+// ✅ New: Send Quotation Email
+router.post('/:quotationId/send-email', protect, sendQuotationEmail);
+
+// ✅ New: Download Quotation PDF
+router.get('/:quotationId/download-pdf', protect, downloadQuotationPDF);
 
 export default router;

@@ -1,11 +1,21 @@
 import Quotation from '../models/Quotation.js';
 import mongoose from 'mongoose';
 
-// Generate a unique Quotation ID (e.g., QTN-0001)
+// Improved Quotation ID Generator (safe even with deleted records)
 const generateQuotationId = async () => {
-  const count = await Quotation.countDocuments();
-  return `QTN-${String(count + 1).padStart(4, '0')}`;
+  const lastQuotation = await Quotation.findOne().sort({ createdAt: -1 });
+  let lastId = 0;
+
+  if (lastQuotation?.quotationId) {
+    const match = lastQuotation.quotationId.match(/QTN-(\d+)/);
+    if (match) {
+      lastId = parseInt(match[1], 10);
+    }
+  }
+
+  return `QTN-${String(lastId + 1).padStart(4, '0')}`;
 };
+
 export const createQuotation = async (req, res) => {
   try {
     const {
@@ -53,8 +63,6 @@ export const createQuotation = async (req, res) => {
   }
 };
 
-
-// Get all quotations
 export const getAllQuotations = async (req, res) => {
   try {
     const quotations = await Quotation.find().sort({ createdAt: -1 });
@@ -64,7 +72,6 @@ export const getAllQuotations = async (req, res) => {
   }
 };
 
-// Get a single quotation
 export const getQuotationById = async (req, res) => {
   try {
     const quotation = await Quotation.findById(req.params.id);
@@ -75,7 +82,6 @@ export const getQuotationById = async (req, res) => {
   }
 };
 
-// Update quotation with optional versioning
 export const updateQuotation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -106,7 +112,6 @@ export const updateQuotation = async (req, res) => {
   }
 };
 
-// Delete quotation
 export const deleteQuotation = async (req, res) => {
   try {
     const deleted = await Quotation.findByIdAndDelete(req.params.id);

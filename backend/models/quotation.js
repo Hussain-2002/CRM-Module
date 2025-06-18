@@ -22,6 +22,14 @@ const versionSchema = new mongoose.Schema({
   notes: String
 }, { _id: false });
 
+// Define a counter schema
+const counterSchema = new mongoose.Schema({
+  _id: { type: String },
+  seq: { type: Number, default: 0 }
+});
+
+const Counter = mongoose.model('Counter', counterSchema);
+
 const quotationSchema = new mongoose.Schema({
   customer: {
     name: String,
@@ -48,7 +56,7 @@ const quotationSchema = new mongoose.Schema({
     delivery: String,
     additionalNotes: String
   },
-  attachments: [String], // file paths or URLs
+  attachments: [String],
   status: {
     type: String,
     enum: ['Draft', 'Sent', 'Accepted', 'Declined', 'Expired'],
@@ -62,5 +70,27 @@ const quotationSchema = new mongoose.Schema({
     comment: String
   }]
 }, { timestamps: true });
+
+// Pre-save hook to auto-increment the quotationId
+quotationSchema.pre('save', async function (next) {
+  const doc = this;
+
+  if (doc.isNew && !doc.quotationId) {
+    try {
+      const counter = await Counter.findByIdAndUpdate(
+        { _id: 'quotationId' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+
+      doc.quotationId = `QTN-${String(counter.seq).padStart(4, '0')}`;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    next();
+  }
+});
 
 export default mongoose.model('Quotation', quotationSchema);

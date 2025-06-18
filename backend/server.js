@@ -8,7 +8,7 @@ import leadRoutes from './routes/leadRoutes.js';
 import authRoutes from './routes/authRoutes.js'; 
 import taskRoutes from './routes/taskRoutes.js';
 import quotationRoutes from './routes/quotationRoutes.js';
-
+import emailRoutes from './routes/emailRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -26,7 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/users', userRoutes);
-
+app.use('/api/email', emailRoutes);
 
 // 404 Handler
 app.use((req, res) => {

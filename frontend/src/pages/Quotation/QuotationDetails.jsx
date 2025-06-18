@@ -10,7 +10,7 @@ const QuotationDetails = () => {
   useEffect(() => {
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`/api/quotations/${id}`, {
+        const response = await axios.get(`http://localhost:5000/api/quotations/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -18,12 +18,58 @@ const QuotationDetails = () => {
         setQuotation(response.data);
       } catch (err) {
         console.error('Error fetching quotation:', err);
-        setError('Quotation not found or failed to fetch.');
+        if (err.response?.status === 404) {
+          setError('Quotation not found.');
+        } else {
+          setError('Failed to load quotation. Please try again.');
+        }
       }
     };
 
     fetchQuotation();
   }, [id]);
+
+  const handleDownloadPDF = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/quotations/${id}/download-pdf`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Quotation-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to download PDF. Please try again.');
+    }
+  };
+
+  const handleSendEmail = async () => {
+    try {
+      await axios.post(`http://localhost:5000/api/quotations/send-email/${id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      alert('Quotation email sent successfully!');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert('Failed to send email. Please try again.');
+    }
+  };
 
   if (error) {
     return <div className="p-4 text-red-600">{error}</div>;
@@ -43,7 +89,6 @@ const QuotationDetails = () => {
     items = [],
     totals = {},
     terms = {},
-    notes,
     versions = [],
   } = quotation;
 
@@ -52,8 +97,18 @@ const QuotationDetails = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Quotation #{quotationId}</h2>
         <div className="flex gap-2">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded">Download PDF</button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded">Send via Email</button>
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={handleDownloadPDF}
+          >
+            Download PDF
+          </button>
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded"
+            onClick={handleSendEmail}
+          >
+            Send via Email
+          </button>
         </div>
       </div>
 
@@ -89,7 +144,7 @@ const QuotationDetails = () => {
         <tbody>
           {items.map((item, idx) => (
             <tr key={idx}>
-              <td className="border px-2 py-1">{item.name}</td>
+              <td className="border px-2 py-1">{item.productName}</td>
               <td className="border px-2 py-1">{item.quantity}</td>
               <td className="border px-2 py-1">₹{item.unitPrice}</td>
               <td className="border px-2 py-1">{item.discount}%</td>
@@ -102,9 +157,9 @@ const QuotationDetails = () => {
 
       <div className="flex justify-end mb-6">
         <div className="text-right">
-          <p><strong>Total Before Tax:</strong> ₹{totals?.totalBeforeTax}</p>
-          <p><strong>Tax Amount:</strong> ₹{totals?.taxAmount}</p>
-          <p className="text-xl font-bold"><strong>Grand Total:</strong> ₹{totals?.grandTotal}</p>
+          <p><strong>Total Before Tax:</strong> ₹{totals?.totalBeforeTax || 0}</p>
+          <p><strong>Tax Amount:</strong> ₹{totals?.taxAmount || 0}</p>
+          <p className="text-xl font-bold"><strong>Grand Total:</strong> ₹{totals?.grandTotal || 0}</p>
         </div>
       </div>
 
@@ -112,7 +167,7 @@ const QuotationDetails = () => {
         <h3 className="font-semibold">Terms & Notes</h3>
         <p><strong>Payment Terms:</strong> {terms?.payment || '—'}</p>
         <p><strong>Delivery Terms:</strong> {terms?.delivery || '—'}</p>
-        <p><strong>Notes:</strong> {notes || '—'}</p>
+        <p><strong>Notes:</strong> {terms?.additionalNotes || '—'}</p>
       </div>
 
       <div>
